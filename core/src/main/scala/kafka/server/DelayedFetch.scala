@@ -108,8 +108,10 @@ class DelayedFetch(delayMs: Long,
     }
 
     // Case D
-    if (accumulatedSize >= fetchMetadata.fetchMinBytes)
+    if (accumulatedSize >= fetchMetadata.fetchMinBytes) {
+      info("fetch size satisfied")
       forceComplete()
+    }
     else
       false
   }

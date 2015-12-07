@@ -477,6 +477,8 @@ class ReplicaManager(val config: KafkaConfig,
     //                        3) has enough data to respond
     //                        4) some error happens while reading data
     if(timeout <= 0 || fetchInfo.size <= 0 || bytesReadable >= fetchMinBytes || errorReadingData) {
+      info("timeout=%d, fetchInfo.size=%d, bytesReadable=%d, fetchMinBytes=%d, errorReadingData=%d".format(timeout, fetchInfo.size, bytesReadable, fetchMinBytes, errorReadingData.asInstanceOf[Int]))
+
       val fetchPartitionData = logReadResults.mapValues(result =>
         FetchResponsePartitionData(result.errorCode, result.hw, result.info.messageSet))
       responseCallback(fetchPartitionData)

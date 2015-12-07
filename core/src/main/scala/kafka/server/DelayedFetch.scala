@@ -69,6 +69,7 @@ class DelayedFetch(delayMs: Long,
    * Upon completion, should return whatever data is available for each valid partition
    */
   override def tryComplete() : Boolean = {
+    info("DelayedFetch: tryComplete")
     var accumulatedSize = 0
     fetchMetadata.fetchPartitionStatus.foreach {
       case (topicAndPartition, fetchStatus) =>
@@ -100,7 +101,7 @@ class DelayedFetch(delayMs: Long,
           case utpe: UnknownTopicOrPartitionException => // Case B
             debug("Broker no longer know of %s, satisfy %s immediately".format(topicAndPartition, fetchMetadata))
             return forceComplete()
-          case nle: NotLeaderForPartitionException =>  // Case A
+          case nle: NotLeaderForPartitionException => // Case A
             debug("Broker is no longer the leader of %s, satisfy %s immediately".format(topicAndPartition, fetchMetadata))
             return forceComplete()
         }

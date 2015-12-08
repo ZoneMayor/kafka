@@ -127,9 +127,13 @@ class DelayedFetch(delayMs: Long,
    * Upon completion, read whatever data is available and pass to the complete callback
    */
   override def onComplete() {
+    info("DelayedFetch: onComplete")
     val logReadResults = replicaManager.readFromLocalLog(fetchMetadata.fetchOnlyLeader,
       fetchMetadata.fetchOnlyCommitted,
       fetchMetadata.fetchPartitionStatus.mapValues(status => status.fetchInfo))
+    info("read size:")
+
+    logReadResults.mapValues(result=> println(result.readSize))
 
     val fetchPartitionData = logReadResults.mapValues(result =>
       FetchResponsePartitionData(result.errorCode, result.hw, result.info.messageSet))

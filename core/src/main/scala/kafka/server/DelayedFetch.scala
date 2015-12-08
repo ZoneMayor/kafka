@@ -132,8 +132,7 @@ class DelayedFetch(delayMs: Long,
       fetchMetadata.fetchOnlyCommitted,
       fetchMetadata.fetchPartitionStatus.mapValues(status => status.fetchInfo))
     info("read size:")
-
-    logReadResults.mapValues(result=> println(result.readSize))
+    logReadResults.foreach{case (tp, lr)=>println(lr.info.messageSet.sizeInBytes)}
 
     val fetchPartitionData = logReadResults.mapValues(result =>
       FetchResponsePartitionData(result.errorCode, result.hw, result.info.messageSet))

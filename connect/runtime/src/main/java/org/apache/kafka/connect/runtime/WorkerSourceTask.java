@@ -43,6 +43,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * WorkerTask that uses a SourceTask to ingest data into Kafka.
@@ -51,6 +52,7 @@ class WorkerSourceTask implements WorkerTask {
     private static final Logger log = LoggerFactory.getLogger(WorkerSourceTask.class);
 
     private static final long SEND_FAILED_BACKOFF_MS = 100;
+    private static final long PAUSE_INTERVAL = 1000;
 
     private final ConnectorTaskId id;
     private final SourceTask task;
@@ -71,6 +73,7 @@ class WorkerSourceTask implements WorkerTask {
     // A second buffer is used while an offset flush is running
     private IdentityHashMap<ProducerRecord<byte[], byte[]>, ProducerRecord<byte[], byte[]>> outstandingMessagesBacklog;
     private boolean flushing;
+    private AtomicBoolean taskPaused;
     private CountDownLatch stopRequestedLatch;
 
     public WorkerSourceTask(ConnectorTaskId id, SourceTask task,
@@ -93,6 +96,7 @@ class WorkerSourceTask implements WorkerTask {
         this.outstandingMessages = new IdentityHashMap<>();
         this.outstandingMessagesBacklog = new IdentityHashMap<>();
         this.flushing = false;
+        taskPaused = new AtomicBoolean(false);
         this.stopRequestedLatch = new CountDownLatch(1);
     }
 
@@ -357,6 +361,9 @@ class WorkerSourceTask implements WorkerTask {
                         continue;
                     if (!sendRecords())
                         stopRequestedLatch.await(SEND_FAILED_BACKOFF_MS, TimeUnit.MILLISECONDS);
+                    if (taskPaused.get()) {
+                        stopRequestedLatch.await(SEND_FAILED_BACKOFF_MS, TimeUnit.MILLISECONDS);
+                    }
                 }
             } catch (InterruptedException e) {
                 // Ignore and allow to exit.

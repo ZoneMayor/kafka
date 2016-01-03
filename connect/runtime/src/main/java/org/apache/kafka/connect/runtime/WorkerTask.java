@@ -46,6 +46,16 @@ interface WorkerTask {
     boolean awaitStop(long timeoutMs);
 
     /**
+     * pause the task
+     */
+    void pause();
+
+    /**
+     * resume the task
+     */
+    void resume();
+
+    /**
      * Close this task. This is different from #{@link #stop} and #{@link #awaitStop} in that the
      * stop methods ensure processing has stopped but may leave resources allocated. This method
      * should clean up all resources.
